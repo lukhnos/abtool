@@ -6,8 +6,21 @@ framework "AddressBook"
 
 class ABPerson
   def []=(k, v)
+    return if !v
     self.setValue v, :forProperty => k
   end
+end
+
+def add_multi_value(items)
+  return nil if !(first_item = items.shift)
+  mv = ABMutableMultiValue.new  
+  mv.addValue first_item, :withLabel => "work"
+
+  while next_item = items.shift
+    mv.addValue next_item, :withLabel => "work"
+  end
+  mv.setPrimaryIdentifier(mv.identifierAtIndex(0))    
+  mv
 end
 
 sab = ABAddressBook.sharedAddressBook
@@ -21,9 +34,11 @@ rows.each do | row |
 
   person = ABPerson.new
 
+  person["Nickname"] = entry[:nickname]
+
   names = entry[:name].split(/, /)
   
-  if names.size == 1
+  if names.size == 1 || entry[:tags] =~ /org/
     if entry[:tags] =~ /org/
     else
       person["Last"] = names[0]
@@ -31,14 +46,20 @@ rows.each do | row |
   elsif names.size > 1
     person["Last"] = names.shift
     # TO DO: Check this rule...
-    person["First"] = names.join(", ")
-    
+    person["First"] = names.join(", ")    
   else
   end
   
+  # trim begin/end spaces: a.gsub!(/^\s*(.+?)\s*$/, '\1')
+  
+  # email
+  emails = entry[:emails].split(/;/).map { |a| a.gsub(/\s/, "") }
+  person["Email"] = add_multi_value(emails)
+  
+  phones = entry[:phones].split(/;/).map { |a| a.gsub(/^\s*(.+?)\s*$/, '\1') }
+  person["Phone"] = add_multi_value(phones)    
   
   person["Note"] = entry[:notes] + " abtool"
-  person["Nickname"] = entry[:nickname]
   sab.addRecord person
 end
 
