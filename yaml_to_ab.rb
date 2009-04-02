@@ -36,7 +36,10 @@ rows.each do | row |
 
   person["Nickname"] = entry[:nickname]
 
-  names = entry[:name].split(/, /)
+  # names = entry[:name].split(/,/)
+  names = entry[:name].componentsSeparatedByString(", ")
+  
+  # puts "Splitting name: #{names.join(";;;")} for name: '#{entry[:name]}'"
   
   if names.size == 1 || entry[:tags] =~ /org/
     if entry[:tags] =~ /org/
