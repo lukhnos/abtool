@@ -41,8 +41,10 @@ rows.each do | row |
   
   # puts "Splitting name: #{names.join(";;;")} for name: '#{entry[:name]}'"
   
-  if names.size == 1 || entry[:tags] =~ /org/
-    if entry[:tags] =~ /org/
+  if names.size == 1 || entry[:tags] =~ /org/ || entry[:tags] =~ /service/
+    if entry[:tags] =~ /org/ || entry[:tags] =~ /service/
+      person["Organization"] = entry[:name]
+      person["ABPersonFlags"] = 1
     else
       person["Last"] = names[0]
     end
