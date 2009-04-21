@@ -1,5 +1,7 @@
 #!/usr/bin/env perl -CS
 
+# Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
+
 use strict;
 use utf8;
 use Spreadsheet::ParseExcel;

@@ -1,4 +1,7 @@
 #!/usr/local/bin/macruby
+
+# Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
+
 require "rubygems"
 require "yaml"
 framework "Cocoa"

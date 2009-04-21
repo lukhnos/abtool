@@ -1,0 +1,9 @@
+This provides a set of simple tools to convert data between Excel
+worksheets and SQLite3 databases. In theory it can be used in other
+databases if a different database engine is used.
+
+Requires DBI and Excel-related Perl modules.
+
+enjoy,
+lukhnos
+

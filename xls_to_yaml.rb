@@ -1,6 +1,8 @@
 #!/usr/bin/ruby
 
-$KCODE="u"
+# Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
+
+$KCODE = "u"
 require "rubygems"
 require "yaml"
 require "parseexcel"
