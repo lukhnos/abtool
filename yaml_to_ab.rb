@@ -28,7 +28,13 @@ end
 
 sab = ABAddressBook.sharedAddressBook
 
-rows = YAML.load(STDIN.readlines.join("\n"))
+raw = ""
+while r = STDIN.gets(nil)
+    raw += r
+end
+
+rows = YAML.load(raw)
+
 colmap = rows.shift.inject([{}, 0]) { |m, k| [(m[0][k.downcase.gsub(/\W/, "").intern] = m[1] ; m[0]), m[1] + 1]  }[0]
 # STDERR.puts rows.to_yaml
 
