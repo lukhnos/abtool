@@ -1,0 +1,3 @@
+[submodule "objf"]
+	path = objf
+	url = file:///tmp/objectiveflickr
