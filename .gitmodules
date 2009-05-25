@@ -1,3 +1,6 @@
 [submodule "objf"]
 	path = objf
 	url = file:///tmp/objectiveflickr
+[submodule "talm"]
+	path = talm
+	url = file:///Users/lukhnos/codex/talmage
