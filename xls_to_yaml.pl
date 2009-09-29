@@ -1,8 +1,8 @@
-#!/usr/bin/env perl -CS
+#!/usr/bin/perl
 
 # Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
-
 use strict;
+use open qw( :std :encoding(UTF-8) );
 use utf8;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::FmtJapan;
@@ -24,13 +24,8 @@ for my $r ($begin..$worksheet->{MaxRow}) {
     for my $c (0..$worksheet->{MaxCol}) {
         my $cell=$worksheet->{Cells}[$r][$c];
         my $v=(defined $cell) ? $cell->Value : "";
-        if ($cell->{Code} eq "ucs2") {
-            $v=Encode::decode("UCS2-BE", $v);
-        }
-        else {
-            $v=Encode::decode("iso8859-1", $v);
-        }
 
+		# no more need to determine if #cell->{Code} is UCS2-BE encoded
         push @data, $v;
     }
     
