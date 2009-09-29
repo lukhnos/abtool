@@ -100,10 +100,10 @@ rows.each do | row |
   end
 
   if entry[:notes].length > 0
-    n = entry[:notes] + "\nabtoolplist" 
+    n = entry[:notes] + "\nabtool" 
     person["Note"] = n    
   else
-    person["Note"] = "abtoolplist"
+    person["Note"] = "abtool"
   end
   
   sab.addRecord person
