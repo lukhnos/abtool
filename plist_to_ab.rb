@@ -2,6 +2,7 @@
 
 # Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
 
+# $kcode = "u"
 require "rubygems"
 require "YAML"
 framework "Cocoa"
@@ -28,13 +29,19 @@ end
 
 sab = ABAddressBook.sharedAddressBook
 
-raw = ""
-while r = STDIN.gets(nil)
-    raw += r
+if ARGV.size < 1
+  STDERR.puts "usage: plist_to_ab.rb filename"
+  exit 1
 end
 
+raw_data = NSData.dataWithContentsOfFile(ARGV[0])
+
+# raw = ""
+# while r = STDIN.gets(nil)
+#    raw += r
+# end
 # for NSUTF8StringEncoding
-raw_data = raw.dataUsingEncoding(4)
+# raw_data = raw.dataUsingEncoding(4)
 rows = NSPropertyListSerialization.propertyListFromData(raw_data, :mutabilityOption => 0, :format => nil, :errorDescription => nil)
 
 # rows = YAML::load(raw.UTF8String)
@@ -82,9 +89,7 @@ rows.each do | row |
   person["Phone"] = add_multi_value(phones)    
   
   if entry[:addresses].length > 0  
-    addrs = entry[:addresses].componentsSeparatedByString(";").map { |a| a.gsub(/^\s*(.+?)\s*$/, '\1').gsub(/\s?\/\/\s?/, "\n") } 
-    
-    # puts addrs.join(">>>")
+    addrs = entry[:addresses].split(/;/).map { |a| a.gsub(/\s?\/\/\s?/, "\n").strip } 
     
     if first_addr = addrs.shift
         
