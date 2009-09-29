@@ -2,7 +2,6 @@
 
 # Public domain. Written by Lukhnos D. Liu (lukhnos@lukhnos.org)
 
-$kcode="u"
 require "rubygems"
 require "YAML"
 framework "Cocoa"
@@ -31,15 +30,21 @@ sab = ABAddressBook.sharedAddressBook
 
 raw = ""
 while r = STDIN.gets(nil)
-    puts "reading"
     raw += r
 end
 
-puts "parsing"
-rows = YAML::load(raw.UTF8String)
+# for NSUTF8StringEncoding
+raw_data = raw.dataUsingEncoding(4)
+rows = NSPropertyListSerialization.propertyListFromData(raw_data, :mutabilityOption => 0, :format => nil, :errorDescription => nil)
+
+# rows = YAML::load(raw.UTF8String)
+
+
+#STDERR.puts rows
+#exit 1
+
 
 colmap = rows.shift.inject([{}, 0]) { |m, k| [(m[0][k.downcase.gsub(/\W/, "").intern] = m[1] ; m[0]), m[1] + 1]  }[0]
-# STDERR.puts rows.to_yaml
 
 rows.each do | row |
   entry = colmap.keys.inject({}) { |m, k| m[k] = row[colmap[k]] || "" ; m }
@@ -95,10 +100,10 @@ rows.each do | row |
   end
 
   if entry[:notes].length > 0
-    n = entry[:notes] + "\nabtool" 
+    n = entry[:notes] + "\nabtoolplist" 
     person["Note"] = n    
   else
-    person["Note"] = "abtool"
+    person["Note"] = "abtoolplist"
   end
   
   sab.addRecord person
