@@ -24,13 +24,16 @@ def multi_value_from_items(items, default_label, *labels):
     return mv
 
 
-ME_NICK = "lukhnos"
+ME_NICK = None
 
 if len(sys.argv) < 2:
-  print("usage: import.py filename")
+  print("usage: import.py filename [me_nick]")
   sys.exit(1)
 
 xls_path = sys.argv[1]
+
+if len(sys.argv) > 2:
+    ME_NICK = sys.argv[2]
 
 book = xlrd.open_workbook(xls_path)
 sh = book.sheet_by_index(0)
@@ -151,74 +154,11 @@ for rx in range(1, sh.nrows):
     person.setValue_forProperty_(notes, kABNoteProperty)
     ab.addRecord_(person)
 
-    if re.search(ME_NICK, nick):
+    if ME_NICK and re.search(ME_NICK, nick):
         me_record = person
 
 if me_record:
     ab.setMe_(me_record)
 
 ab.save()
-
-    
-
-    # rows.each do | row |
-    # 
-    #   # names = entry[:name].split(/,/)
-    #   names = entry[:name].componentsSeparatedByString(", ")
-    # 
-    #   # puts "Splitting name: #{names.join(";;;")} for name: '#{entry[:name]}'"
-    # 
-    #   if names.size == 1 || entry[:tags] =~ /org/ || entry[:tags] =~ /service/
-    #     if entry[:tags] =~ /org/ || entry[:tags] =~ /service/
-    #       person["Organization"] = entry[:name]
-    #       person["ABPersonFlags"] = 1
-    #     else
-    #       person["Last"] = names[0]
-    #     end
-    #   elsif names.size > 1
-    #     person["Last"] = names.shift
-    #     # TO DO: Check this rule...
-    #     person["First"] = names.join(", ")    
-    #   else
-    #   end
-    # 
-    #   # trim begin/end spaces: a.gsub!(/^\s*(.+?)\s*$/, '\1')
-    # 
-    #   # email
-    #   emails = entry[:emails].split(/;/).map { |a| a.gsub(/\s/, "") }
-    #   person["Email"] = add_multi_value(emails)
-    # 
-    #   phones = entry[:phones].split(/;/).map { |a| a.gsub(/^\s*(.+?)\s*$/, '\1') }
-    #   person["Phone"] = add_multi_value(phones)    
-    # 
-    #   if entry[:addresses].length > 0  
-    #     addrs = entry[:addresses].componentsSeparatedByString(";").map { |a| a.gsub(/^\s*(.+?)\s*$/, '\1').gsub(/\s?\/\/\s?/, "\n") } 
-    # 
-    #     # puts addrs.join(">>>")
-    # 
-    #     if first_addr = addrs.shift
-    # 
-    #       mv = ABMutableMultiValue.new  
-    #       mv.addValue({ "Street" => first_addr }, :withLabel => "work")
-    # 
-    #       while next_addr = addrs.shift
-    #         mv.addValue({ "Street" => next_addr }, :withLabel => "work")
-    #       end
-    #       mv.setPrimaryIdentifier(mv.identifierAtIndex(0))    
-    #       person["Address"] = mv
-    #     end
-    #   end
-    # 
-    #   if entry[:notes].length > 0
-    #     n = entry[:notes] + "\nabtool" 
-    #     person["Note"] = n    
-    #   else
-    #     person["Note"] = "abtool"
-    #   end
-    # 
-    #   sab.addRecord person
-    # end
-    # 
-    # sab.save
-
-    
+ 
