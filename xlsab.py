@@ -104,10 +104,11 @@ for rx in range(1, sh.nrows):
         else:
             person.setValue_forProperty_(name, kABOrganizationProperty)
     else:
-        if len(name_components) == 0 and len(nick) > 0:
-            person.setValue_forProperty_(nick, kABFirstNameProperty)
-        elif len(name_components) == 1:
-            person.setValue_forProperty_(name_components[0], kABFirstNameProperty)			
+        if len(name_components) == 1:
+            if len(name_components[0]) == 0 and len(nick) > 0:
+                person.setValue_forProperty_(nick, kABNicknameProperty)
+            else:
+                person.setValue_forProperty_(name_components[0], kABFirstNameProperty)			
         elif len(name_components) == 2:
             person.setValue_forProperty_(name_components[0], kABLastNameProperty)
             person.setValue_forProperty_(name_components[1], kABFirstNameProperty)			
@@ -126,7 +127,7 @@ for rx in range(1, sh.nrows):
                 person.setValue_forProperty_(title_org_components[1], kABOrganizationProperty)
 
     
-    person.setValue_forProperty_(nick, "Nickname")
+    # person.setValue_forProperty_(nick, "Nickname")
     
     tag_notes = map(lambda x: "tag:" + x, tags)
     tag_notes += [IMPORT_TOOL_MARK]
