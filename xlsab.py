@@ -6,14 +6,19 @@ import xlrd
 from AddressBook import *
 from Foundation import *
 
-def multi_value_from_items(items):
+def multi_value_from_items(items, default_label, *labels):
     if len(items) == 0:
         return None
         
+    filled_labels = list(labels)
+    while len(filled_labels) < len(items):
+        filled_labels.append(default_label)
+    ifl = zip(items, filled_labels)
+            
     mv = ABMutableMultiValue.new()
 
-    for item in items:
-        mv.addValue_withLabel_(item, "work")
+    for item, labels in ifl:
+        mv.addValue_withLabel_(item, labels)
     
     mv.setPrimaryIdentifier_(mv.identifierAtIndex_(0))
     return mv
@@ -51,6 +56,13 @@ print("tags: %s" % tm)
 
 ab = ABAddressBook.sharedAddressBook()
 
+IMPORT_TOOL_MARK = "tag:abtool"
+
+for p in ab.people():
+    tag_str = p.valueForProperty_(kABNoteProperty)
+    if tag_str and re.search(IMPORT_TOOL_MARK, tag_str):
+        ab.removeRecord_(p)
+
 me_record = None
 
 print ab
@@ -60,29 +72,82 @@ for rx in range(1, sh.nrows):
 
     v = lambda t, y: map(lambda x: x.strip(), str.split(row[tm[t]].value.encode('utf-8'), y))
     
-    tags = row[tm["tags"]].value.encode('utf-8')  
+    tag_str = row[tm["tags"]].value.encode('utf-8')
+    
+    if len(tag_str):
+        tags = v("tags", ",")
+    else:
+        tags = []
+        
     nick = row[tm["nickname"]].value.encode('utf-8')  
+    name = row[tm["name"]].value.encode('utf-8')
     name_components = v("name", ", ")
-    kanji_components = v("kanji", " ")
+    kanji = row[tm["kanji"]].value.encode('utf-8') 
     phones = v("phones", "; ")
     emails = v("emails", "; ")
     addrs = v("addresses", "; ")
-    title_org_components = v("title", " // ")
+    
+    title_orgs = v("title", "; ")
+    title_org_components = map(lambda x: x.strip(), str.split(title_orgs[0], " // "))
+    
     notes = row[tm["notes"]].value.encode('utf-8')
-    
-    print("nick %s, phones: %s" % (nick, ",".join(phones)))
-    
+	
+
     person = ABPerson.new()
+    # print("nick %s, phones: %s" % (nick, ",".join(phones)))
+	
+    if re.search("org", tag_str):
+        person.setValue_forProperty_(kABShowAsCompany, kABPersonFlags)
+
+        if len(name) == 0 and len(nick) > 0:
+            person.setValue_forProperty_(nick, kABOrganizationProperty)
+        else:
+            person.setValue_forProperty_(name, kABOrganizationProperty)
+    else:
+        if len(name_components) == 0 and len(nick) > 0:
+            person.setValue_forProperty_(nick, kABFirstNameProperty)
+        elif len(name_components) == 1:
+            person.setValue_forProperty_(name_components[0], kABFirstNameProperty)			
+        elif len(name_components) == 2:
+            person.setValue_forProperty_(name_components[0], kABLastNameProperty)
+            person.setValue_forProperty_(name_components[1], kABFirstNameProperty)			
+        elif len(name_components) >= 3:
+            # TODO: Join the remaining components
+            person.setValue_forProperty_(name_components[0], kABLastNameProperty)
+            person.setValue_forProperty_(name_components[1], kABFirstNameProperty)
+            person.setValue_forProperty_(name_components[2], kABSuffixProperty)
+    
+        if len(title_org_components) > 0:
+            if len(title_org_components) == 1:
+                person.setValue_forProperty_(title_org_components[0], kABOrganizationProperty)
+            else:
+                # TODO: Join the remaining components
+                person.setValue_forProperty_(title_org_components[0], kABJobTitleProperty)
+                person.setValue_forProperty_(title_org_components[1], kABOrganizationProperty)
+
+    
     person.setValue_forProperty_(nick, "Nickname")
     
-    if len(notes) > 0:    
-        notes += "\nnewabt"
-    else:
-        notes = "newabt"
-
-    person.setValue_forProperty_(multi_value_from_items(emails), "Email")
+    tag_notes = map(lambda x: "tag:" + x, tags)
+    tag_notes += [IMPORT_TOOL_MARK]
     
-    person.setValue_forProperty_(notes, "Note")
+    if len(kanji) > 0:
+        tag_notes += ["kanji:%s" % kanji]
+    
+    note_appendix = "\n".join(tag_notes)
+    
+    if len(notes) > 0:    
+        notes += "\n" + note_appendix
+    else:
+        notes = note_appendix
+
+    person.setValue_forProperty_(multi_value_from_items(emails, kABEmailWorkLabel, kABEmailWorkLabel, kABEmailHomeLabel), kABEmailProperty)
+    person.setValue_forProperty_(multi_value_from_items(phones, kABPhoneHomeLabel, kABPhoneMobileLabel, kABPhoneWorkLabel), kABPhoneProperty)
+    
+    mapped_addrs = map(lambda x: { kABAddressStreetKey : x }, addrs)
+    person.setValue_forProperty_(multi_value_from_items(mapped_addrs, kABAddressWorkLabel, kABAddressWorkLabel, kABAddressHomeLabel), kABAddressProperty)
+    
+    person.setValue_forProperty_(notes, kABNoteProperty)
     ab.addRecord_(person)
 
     if re.search(ME_NICK, nick):
@@ -96,7 +161,6 @@ ab.save()
     
 
     # rows.each do | row |
-    #   person["Nickname"] = entry[:nickname]
     # 
     #   # names = entry[:name].split(/,/)
     #   names = entry[:name].componentsSeparatedByString(", ")
