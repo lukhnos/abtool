@@ -24,16 +24,16 @@ def multi_value_from_items(items, default_label, *labels):
     return mv
 
 
-ME_NICK = None
+MY_NAME = None
 
 if len(sys.argv) < 2:
-  print("usage: import.py filename [me_nick]")
+  print("usage: import.py filename [my name]")
   sys.exit(1)
 
 xls_path = sys.argv[1]
 
 if len(sys.argv) > 2:
-    ME_NICK = sys.argv[2]
+    MY_NAME = sys.argv[2]
 
 book = xlrd.open_workbook(xls_path)
 sh = book.sheet_by_index(0)
@@ -109,7 +109,7 @@ for rx in range(1, sh.nrows):
     else:
         if len(name_components) == 1:
             if len(name_components[0]) == 0 and len(nick) > 0:
-                person.setValue_forProperty_(nick, kABNicknameProperty)
+                person.setValue_forProperty_(nick, kABFirstNameProperty)
             else:
                 person.setValue_forProperty_(name_components[0], kABFirstNameProperty)			
         elif len(name_components) == 2:
@@ -154,7 +154,7 @@ for rx in range(1, sh.nrows):
     person.setValue_forProperty_(notes, kABNoteProperty)
     ab.addRecord_(person)
 
-    if ME_NICK and re.search(ME_NICK, nick):
+    if MY_NAME and re.search(MY_NAME, name):
         me_record = person
 
 if me_record:
